@@ -1,15 +1,27 @@
-import { ChangeEvent, memo, useMemo, useState } from 'react';
+import React, { ChangeEvent, memo, useEffect, useMemo, useState } from 'react';
 
 import { InputContainer } from '@/components/UI';
 import { useBlur } from '@/hooks/useBlur';
 import { initialCardState } from '@/pages/CardRegisterPage';
 import { CardKey } from '@/types';
 
+function handleInputChange(
+  setValue: React.Dispatch<React.SetStateAction<string | undefined | ''>>
+) {
+  return (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.persist();
+    setValue(event.target.value);
+  };
+}
+
 type Props = {
   onChangeOwner: <T extends CardKey>(state: typeof initialCardState[T]) => void;
+  onChange: () => void;
+  value: '';
 };
 
-const CardOwnerInput = (props: Props) => {
+const CardOwnerInput = ({ value: propsValue = '', ...props }: Props) => {
+  const [value, setValue] = useState(propsValue);
   const [owner, setOwner] = useState('');
   const { dirtyState, makeDirty } = useBlur();
 
@@ -29,6 +41,8 @@ const CardOwnerInput = (props: Props) => {
     props.onChangeOwner({ val: owner, isValid: isOwnerValid });
   };
 
+  useEffect(() => onChange(value), [value, onChange]);
+
   return (
     <InputContainer
       label="소유자명"
@@ -38,7 +52,8 @@ const CardOwnerInput = (props: Props) => {
       <input
         type="text"
         placeholder="Dahye"
-        onChange={handleChangeOwner}
+        onChange={handleInputChange(setValue)}
+        // onChange={handleChangeOwner}
         onBlur={makeDirty}
         maxLength={MAX_OWNER_NAME_LENGTH}
       />
